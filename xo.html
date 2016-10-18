@@ -1,0 +1,206 @@
+<!DOCTYPE html> 
+<html>
+    <head>
+        <style>
+            div#container {
+                width: 460px;
+                text-align: center;
+            }
+
+            div.cell {
+                background-color: #000;
+                border: 1px solid black;
+                width: 60px;
+                height: 40px;
+                padding: 40px;
+                display: inline-block; 
+                text-align: center;
+                vertical-align: middle;
+                margin: 3px;
+                font-size: 40px;
+                color: yellow;
+            }
+
+            button {
+                width: 100%;
+                height: 40px;
+                margin-top: 15px;
+                background-color: #000;
+                color: yellow;
+            }
+        </style>
+    </head>
+    <body onLoad="printField()">
+        <div id="container">
+        </div>
+    </body>
+    <script type="text/javascript">
+        var lock = false;
+        var turn = false;
+
+        var xFlag = 'x';
+        var oFlag = 'o';
+    
+        function play(cell, filler)
+        {
+            if(!lock && cell.innerHTML == '')
+            {
+                fill(cell.id, filler);
+
+                if(checkWinner(xFlag))
+                {
+                    alert('YOU WON');
+                    setLock(true);
+                }
+                else
+                    playBot();       
+
+                if(checkWinner(oFlag))
+                {
+                    alert('COMPUTER WON');
+                    setLock(true);
+                }
+            }
+        }
+
+        function fill(cell, filler)
+        {
+            document.getElementById(cell).innerHTML = filler;
+        }
+
+        function playBot()
+        {
+            var targetCell;
+            var arr = [];
+            var cells = document.getElementsByClassName("cell");
+            var goldCell = winningCell(oFlag);
+            var holeCell = winningCell(xFlag);
+
+            if(goldCell)
+            {
+                fill(goldCell, oFlag);
+                return;
+            }
+
+            if(holeCell)
+            {
+                fill(holeCell, oFlag);
+                return;
+            }
+
+            for(item of cells)
+            {
+                if(item.innerHTML == '')
+                    arr.push(item.id);
+            }
+
+            targetCell = arr[generateRandom(0, arr.length-1)];
+
+            if(typeof targetCell !== 'undefined')
+                fill(targetCell, oFlag);                
+            else
+                console.log(targetCell);
+        }
+
+        function getMap(flag)
+        {
+            var map = '';
+
+            for(i=0; i<9; i++)
+                if(document.getElementById(i).innerHTML == flag)
+                    map = map + i;
+
+            return map;
+        }
+
+        function getWinnerHands()
+        {
+            var arr = ['012', '048', '036', '345', '678', '147', '258', '246'];
+            return arr;
+        }
+
+        function generateRandom(minimum, maximum)
+        {
+            return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+        }
+
+        function checkWinner(flag)
+        {
+            var winner = getWinnerHands();
+            var map = getMap(flag);
+            var result = false;
+
+            for(item of winner)
+                if(map.includes(item.charAt(0)) && map.includes(item.charAt(1)) && map.includes(item.charAt(2)))
+                    result = true;
+
+            return result;
+        }        
+
+        function winningCell(flag)
+        {
+            var winner = getWinnerHands();
+            var map = getMap(flag);
+            var counter;
+            var cell = false;
+
+            for(item of winner)
+            {
+                counter = 0;
+
+                for(i=0; i<3; i++)
+                {
+                    if(map.includes(item.charAt(i)))
+                        counter++;
+                    else if(document.getElementById(item.charAt(i)).innerHTML == '')
+                        cell = item.charAt(i);
+                }
+
+                if(counter == 2)
+                    break;
+                else
+                    cell = false;
+            }
+
+            return cell;
+        }
+
+        function setLock(value)
+        {
+            lock = value;
+        }
+
+        function restartField()
+        {
+            for(i=0; i<9; i++)
+                fill(i, '');
+                
+            setLock(false);
+
+            if(!turn)
+                playBot();
+
+            toggleTurn();
+        }
+
+        function toggleTurn()
+        {
+            turnVal = (turn) ? false : true;
+            turn = turnVal;
+        }
+
+        function printField()
+        {
+            var field = "";
+
+            for(i=0; i<9; i++)
+            {
+                field += "<div id=" + i + " class='cell' onClick=\"play(this, '"+ xFlag +"')\"></div>";
+            }
+
+            field += "<button onClick=\"restartField()\">Restart</button>";
+
+            document.getElementById("container").innerHTML = field;
+        }
+    </script>
+</html>
